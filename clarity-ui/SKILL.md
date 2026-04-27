@@ -124,6 +124,42 @@ Light, warm, and muted. Never harsh. Never neon.
 - **Gradients**: Allowed only as page backgrounds (soft multi-color blobs/mesh gradients behind the glass layer). Never on buttons or cards.
 - **Dark mode**: If requested, invert to `--bg-page: #1a1a2e` with glass cards at `rgba(255,255,255,0.08)`. Keep the same accent color.
 
+### Dark Mode (Complete Override)
+
+When dark mode is activated, apply via `[data-theme="dark"]` on `<html>`. Override the **full** token set — never partially swap colors:
+
+```css
+[data-theme="dark"] {
+  /* Backgrounds */
+  --bg-page: #1a1a2e;
+  --bg-card: rgba(255, 255, 255, 0.06);
+  --bg-card-hover: rgba(255, 255, 255, 0.10);
+  --bg-sidebar: rgba(255, 255, 255, 0.04);
+
+  /* Text */
+  --text-primary: #e8e6e1;
+  --text-secondary: #9a9890;
+  --text-tertiary: #6b6960;
+
+  /* Accent — same hue, boost lightness for dark bg contrast */
+  --accent: #eab34d;
+  --accent-light: rgba(232, 168, 56, 0.15);
+  --accent-dark: #d49a2e;
+
+  /* Borders & Shadows */
+  --border-glass: 1px solid rgba(255, 255, 255, 0.08);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.25);
+  --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+```
+
+Dark mode rules:
+- Glass borders drop to `0.08` opacity — structure comes from shadow contrast, not edge lines.
+- Shadows deepen (`0.25–0.35` opacity) since there's no ambient light to soften them.
+- Background gradient blobs shift to deeper tones (indigo `#2d1b69`, deep teal `#0d3b4a`, muted plum `#3d1f3d`) at `0.2` opacity.
+- Verify all text passes **4.5:1 contrast** against `#1a1a2e` — `#e8e6e1` on `#1a1a2e` = 11.3:1 ✓.
+- Never invert the accent color hue — only adjust lightness.
+
 ---
 
 ## Typography
@@ -240,6 +276,537 @@ The fundamental building block:
 - Use SVG circles with `stroke-dasharray` and `stroke-dashoffset`.
 - Ring thickness: `6–10px`. Background ring: light gray. Active ring: accent color with `stroke-linecap: round`.
 - Center the percentage value in `font-xl`, bold.
+
+### Form Controls
+The missing fundamental in most design systems. Glass-styled inputs that feel native to the system.
+
+```css
+/* Base Input */
+.input {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 12px var(--space-md);
+  font-size: var(--font-base);
+  font-family: inherit;
+  color: var(--text-primary);
+  width: 100%;
+  transition: all 0.2s ease;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* Validation States */
+.input--error { border-color: var(--status-error); }
+.input--error:focus { box-shadow: 0 0 0 3px rgba(217, 79, 79, 0.12); }
+.input--success { border-color: var(--status-success); }
+
+/* Floating Label */
+.field { position: relative; }
+.field .input { padding-top: 20px; padding-bottom: 8px; }
+.field-label {
+  position: absolute;
+  left: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--font-base);
+  color: var(--text-tertiary);
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+.field .input:focus ~ .field-label,
+.field .input:not(:placeholder-shown) ~ .field-label {
+  top: 12px;
+  transform: translateY(0);
+  font-size: var(--font-xs);
+  color: var(--accent);
+}
+
+/* Validation Message */
+.field-message {
+  font-size: var(--font-xs);
+  margin-top: var(--space-xs);
+  padding-left: var(--space-md);
+}
+.field-message--error { color: var(--status-error); }
+.field-message--success { color: var(--status-success); }
+
+/* Select */
+.select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-md) center;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+/* Textarea */
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+  border-radius: var(--radius-md);
+}
+
+/* Checkbox & Radio (custom) */
+.checkbox,
+.radio {
+  width: 20px;
+  height: 20px;
+  appearance: none;
+  border: 1.5px solid var(--text-tertiary);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.checkbox { border-radius: 6px; }
+.radio { border-radius: 50%; }
+.checkbox:checked,
+.radio:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.radio:checked {
+  background-image: none;
+  box-shadow: inset 0 0 0 3px white;
+}
+```
+
+Form rules:
+- Every `.input`, `.select`, and `.textarea` inherits the glass card aesthetic — same blur, same border style.
+- Focus rings always use `--accent-light` as a soft glow — never browser-default outlines.
+- Floating labels transition from placeholder position to above-input on focus — never use raw `<label>` above input without the float animation.
+- Validation states change border color only — never change the entire input background to red/green.
+- Touch targets: all form elements are at least `44px` tall.
+
+### Modal / Dialog
+Glass modal over a blurred backdrop. Used for confirmations, detail views, and focused forms.
+
+```css
+/* Backdrop */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Modal Panel */
+.modal {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.12);
+  padding: var(--space-xl);
+  max-width: 480px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: modalIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+.modal-title {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+.modal-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+```
+
+Modal rules:
+- Overlay blur is lighter than card blur (`6px` vs `16px`) — just enough to defocus the background.
+- Modal entrance uses `scale(0.95)` + `translateY(8px)` — subtle, never dramatic zoom.
+- Always include a visible close button AND close-on-overlay-click.
+- Focus trap: keyboard focus must stay inside the modal while open.
+- Max width `480px` for simple dialogs, `640px` for forms, `800px` for complex content.
+
+### Toast / Notification
+Lightweight feedback messages that appear and auto-dismiss.
+
+```css
+.toast-container {
+  position: fixed;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.toast {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 280px;
+  max-width: 400px;
+  animation: toastIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Status variants — left accent border */
+.toast--success { border-left: 3px solid var(--status-success); }
+.toast--error   { border-left: 3px solid var(--status-error); }
+.toast--warning { border-left: 3px solid var(--status-warning); }
+.toast--info    { border-left: 3px solid var(--status-info); }
+
+.toast-message {
+  font-size: var(--font-sm);
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.toast-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: var(--space-xs);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+```
+
+Toast rules:
+- Position: top-right on desktop, bottom-center on mobile.
+- Auto-dismiss after `4–6 seconds` for success/info. Error toasts persist until dismissed.
+- Status is indicated by a left accent border — never color the entire background.
+- Stack vertically with `8px` gap. Maximum 3 visible toasts — oldest auto-dismisses.
+- Exit animation: fade out + slide right over `200ms`.
+
+### Data Table
+Glass-styled tables for dashboards and admin panels. Minimal lines, maximum readability.
+
+```css
+.table-wrapper {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: var(--border-glass);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--font-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.table td {
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--font-sm);
+  color: var(--text-primary);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Sortable column indicator */
+.table th[data-sortable] {
+  cursor: pointer;
+  user-select: none;
+}
+.table th[data-sortable]:hover {
+  color: var(--text-primary);
+}
+
+/* Pagination */
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+}
+```
+
+Table rules:
+- Wrap the `<table>` in a glass card — never let table edges float bare.
+- No vertical borders. Horizontal separators only, at `0.03–0.06` opacity.
+- Header text: uppercase, letter-spaced, `--text-tertiary` — it's metadata, not content.
+- Row hover: barely-there background shift (`0.02` opacity) — not a highlight color.
+- On mobile: horizontally scroll the wrapper, or switch to a stacked card layout per row.
+
+### Loading / Skeleton States
+Shimmer placeholders that match the glass aesthetic. Never use spinners.
+
+```css
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.04) 25%,
+    rgba(0, 0, 0, 0.08) 50%,
+    rgba(0, 0, 0, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton--text {
+  height: 16px;
+  width: 80%;
+  margin-bottom: var(--space-sm);
+}
+.skeleton--text-short {
+  height: 12px;
+  width: 40%;
+}
+.skeleton--circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+.skeleton--card {
+  height: 160px;
+  border-radius: var(--radius-md);
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+```
+
+Loading rules:
+- Skeleton shapes must match the real content they replace — same height, width, and border-radius.
+- Shimmer gradient uses near-transparent blacks — never colored shimmer.
+- Stagger skeleton entrance with the same `fadeUp` animation used for real cards.
+- Never show a loading spinner. Spinners break the calm, minimal aesthetic.
+- If loading takes > 3 seconds, add a subtle text hint below: "Loading..." in `--text-tertiary`.
+
+### Empty & Error States
+Blank screens are missed opportunities. Every empty or error state should guide the user forward.
+
+```css
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl) var(--space-xl);
+  text-align: center;
+}
+.empty-state-icon {
+  width: 64px;
+  height: 64px;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-lg);
+  opacity: 0.5;
+}
+.empty-state-title {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+}
+.empty-state-description {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  max-width: 360px;
+  margin-bottom: var(--space-lg);
+}
+/* Follow with a .btn-primary CTA */
+```
+
+Empty & error state rules:
+- Always include: icon + title + description + CTA button.
+- Icon uses stroke style, `64px`, at `0.5` opacity — present but not dramatic.
+- Title is direct: "No projects yet" not "Oops! Nothing here!" — no fake enthusiasm.
+- Description offers one clear next step: "Create your first project to get started."
+- Error states swap the icon to a warning symbol and use `--status-error` for the title color only.
+- Never leave a blank white area — it looks broken.
+
+### Breadcrumbs
+Lightweight wayfinding for multi-level navigation.
+
+```css
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-lg);
+}
+.breadcrumbs a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.breadcrumbs a:hover {
+  color: var(--accent);
+}
+.breadcrumbs-separator {
+  font-size: 10px;
+  opacity: 0.4;
+}
+.breadcrumbs-current {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+```
+
+- Separators use `/` or `›` at reduced opacity — never `>`.
+- Current page is non-linked, `--text-primary`, `font-weight: 500`.
+- Maximum 4 levels deep. If deeper, collapse middle levels to `...`.
+
+### Top Navigation Bar
+Alternative to the sidebar for simpler pages and marketing sites.
+
+```css
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: var(--border-glass);
+  padding: var(--space-md) var(--space-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-brand {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.navbar-links {
+  display: flex;
+  gap: var(--space-lg);
+  list-style: none;
+}
+.navbar-links a {
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  position: relative;
+}
+.navbar-links a:hover,
+.navbar-links a.active {
+  color: var(--text-primary);
+}
+.navbar-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+/* Mobile: collapse to hamburger */
+@media (max-width: 639px) {
+  .navbar-links { display: none; }
+  .navbar-links.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    padding: var(--space-md);
+    border-bottom: var(--border-glass);
+    box-shadow: var(--shadow-card);
+  }
+}
+```
+
+Navbar rules:
+- Always sticky with glass blur — it floats as you scroll.
+- Active link indicated by a `2px` accent underline — not background color change.
+- Mobile: links collapse into a dropdown panel (glass background, same blur). Trigger with a hamburger icon.
+- Never put more than 6 links in the navbar. If more, group into dropdowns.
 
 ---
 
@@ -412,3 +979,10 @@ Before delivering any UI code, verify:
 - [ ] Animations are under 500ms, CSS-only, purposeful
 - [ ] No pure black (`#000`) or pure white (`#fff`) used anywhere
 - [ ] Icons are consistent in style, size, and stroke weight
+- [ ] Form inputs have glass styling with accent focus rings
+- [ ] Modals use backdrop blur overlay with focus trap
+- [ ] Toast notifications use left-border status colors, not full-background color
+- [ ] Data tables are wrapped in glass cards with minimal horizontal borders
+- [ ] Loading states use skeleton shimmer — never spinners
+- [ ] Empty states include icon + title + description + CTA
+- [ ] Dark mode overrides all CSS variables (if applicable)
